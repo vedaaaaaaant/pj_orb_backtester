@@ -1,4 +1,4 @@
-# Project ORB Backtester
+# Project ORB
 
 This is a repository containing code which can be used to backtest the opening range breakout strategy for given stocks for a given period using Zerodha's API. 
 
