@@ -22,4 +22,6 @@ You can enter some inputs in the beginning of the code to get results of the bac
 
 I've been learning python for about a month now. And this is the first full backtester that I have written. My apologies if the code is too complicated. 
 
+PS: This code will only work with indian stocks unfortunately. I tried to write a similar code with the 'yfinance' library for international stocks. However, 'yfinance' had certain limitations which didn't allow some of the  iterations used in the program. 
+
 Disclaimer: The code is provided with no guarantee of suitability for use in a real system or otherwise.
