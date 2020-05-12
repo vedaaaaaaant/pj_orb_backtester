@@ -5,34 +5,38 @@ from datetime import datetime, timedelta, date
 import pdb
 import pandas as pd
 import pprint as pp
+import calendar
 
 """Trade portfolio"""
 tPF = {
-    1270529:'ICICIBANK',
     738561:'RELIANCE',
-    4708097:'RBLBANK',
+    70401:'AUROPHARMA',
     1723649:'JINDALSTEL',
-    348929:'HINDALCO',
-    5582849:'SBILIFE',
+    1270529:'ICICIBANK',
     265:'SENSEX',
 }
 
-stockyear = 2019 
+"""Set the period for backtesting. """
+
+stockyear = 2020 
+startMonth = 3
+endMonth = 4
+
+startMonthName = calendar.month_name[startMonth]
+endMonthName = calendar.month_name[endMonth]
 
 """MTA Switch: Allows to change between single trade per day and multiple trades per day.
-if mta = 0 > Program will only perform 1 transaction for the day and move to the next day. 
-if mta = 1 > Program will perform as many transactions as it can for one day before moving on.
+if mta = 0 > Program will perform as many transactions as it can for one day before moving on.
+if mta = 1 > Program will only perform 1 transaction for the day and move to the next day. 
 in the code below 'trade' will be set as MTA.
 """
 mta = 1  
 
-
-
 """This is the main part of the code. It will iterate through a number of stocks, for 12 months, across every single day of the month for one minute intervals."""
 for stockToken, stockName in tPF.items():
-    print("Calculating for "+stockName+" ...:")
+    print("Calculating for "+stockName+" ...")
     percentchange = []
-    for stockmonth in range(2):
+    for stockmonth in range(startMonth,endMonth+1):
         for stockday in range(32): 
             try:
                 end_date = date(stockyear,stockmonth, stockday)
@@ -60,7 +64,7 @@ for stockToken, stockName in tPF.items():
                 adf = df[ord:] 
 
                 """Profit and stoploss targets"""
-                profitTarget = 1
+                profitTarget = 1.5
                 pt = profitTarget/100
 
                 stoplossTarget = 0.25
@@ -99,8 +103,7 @@ for stockToken, stockName in tPF.items():
                         - whether it is the penultimate minute of the day's trading session
                         If any of these 3 criterion are met, active position will be reversed at the closing price. These 3 criterion have been written separately for the buy and sell positions. """
 
-                    # BuyTran Stoploss target sell @ 0.5%
-                    
+                    # BuyTran: Stoploss target met - sell 
                     elif (tradeType == 1 and ltp <= (bp*(1-slt)) and pos == 1 and trade<1 ):
                         pos = 0
                         sp = ltp
@@ -108,10 +111,8 @@ for stockToken, stockName in tPF.items():
                         pc = (sp/bp-1)*100
                         trade = mta
                         percentchange.append(pc)
-
                         
-                        
-                    # Last minute of the day sell
+                    # BuyTran: Last minute of the day  - sell
                     elif (tradeType == 1 and num==calrange-1 and pos == 1):
                         pos = 0
                         sp = ltp
@@ -120,8 +121,7 @@ for stockToken, stockName in tPF.items():
                         trade = mta
                         percentchange.append(pc)
 
-                        
-                    # Profit target sell @ 0.5%
+                    # BuyTran: Profit target - sell
                     elif (tradeType == 1 and pos == 1 and trade<1):
                         if ltp > (bp*(1+pt)):
                             sp = ltp
@@ -132,7 +132,7 @@ for stockToken, stockName in tPF.items():
                             trade = mta
 
 
-                    # SellTran Stoploss target sell @ 0.5%
+                    # SellTran Stoploss target met - buy 
                     elif (tradeType == 2 and ltp >= (sp*(1+slt)) and pos == 1 and trade<1):
                         pos = 0
                         bp = ltp
@@ -141,7 +141,7 @@ for stockToken, stockName in tPF.items():
                         trade = mta
                         percentchange.append(pc)
                         
-                    # Sell Tran Last minute of the day sell
+                    # SellTran: Last minute of the day - buy
                     elif (tradeType == 2 and num==calrange-1 and pos == 1):
                         pos = 0
                         bp = ltp
@@ -149,9 +149,8 @@ for stockToken, stockName in tPF.items():
                         pc = (sp/bp-1)*100
                         trade = mta
                         percentchange.append(pc)
-
                         
-                    # Profit target sell @ 0.5%
+                    # SellTran: Profit target met - buy
                     elif (tradeType == 2 and pos == 1 and trade<1):
                         if ltp < (sp*(1-pt)):
                             bp = ltp
@@ -165,7 +164,12 @@ for stockToken, stockName in tPF.items():
             except:
                 pass
     finalReturn = (round(sum(percentchange), 2))
-    print("The total return for "+ stockName+ " over "+str(len(percentchange)) +" trades: "+ str(finalReturn)+"%")
+    print()
+    print("Total Return for "+ stockName+ " for period "+startMonthName[:3]+"-"+endMonthName[:3]+" "+str(stockyear)+":")
+    print(str(finalReturn)+"% across "+str(len(percentchange))+" trades.")
+    print()
+    print()
+    
 
 
 
